@@ -204,6 +204,7 @@
         <header>
             <h1><span class="icon">📦</span>旧カタログ(ポスト・宅配ボックス)</h1>
             <div class="subtitle">製品一覧</div>
+            <a href="index.html" style="display:inline-block;margin-top:10px;padding:7px 16px;background:#3498db;color:#fff;text-decoration:none;border-radius:6px;font-size:0.9rem;font-weight:700;">← 戻る</a>
             <div class="filters" id="filters"></div>
             <div class="stats" id="stats"></div>
         </header>
@@ -1662,24 +1663,24 @@
             const paths = [];
             
             // 1. 元のファイル名
-            paths.push(`images/${model}.png`);
+            paths.push(`${model}.png`);
             
             // 2. 全角スラッシュを半角に変換
             const hankakuSlash = model.replace(/／/g, '/');
             if (hankakuSlash !== model) {
-                paths.push(`images/${hankakuSlash}.png`);
+                paths.push(`${hankakuSlash}.png`);
             }
             
             // 3. 全角括弧に変換
             const zenkaku = model.replace(/\(/g, '（').replace(/\)/g, '）');
             if (zenkaku !== model) {
-                paths.push(`images/${zenkaku}.png`);
+                paths.push(`${zenkaku}.png`);
             }
             
             // 4. 全角括弧+半角スラッシュ
             const zenkakuHankakuSlash = zenkaku.replace(/／/g, '/');
             if (zenkakuHankakuSlash !== model && zenkakuHankakuSlash !== zenkaku && zenkakuHankakuSlash !== hankakuSlash) {
-                paths.push(`images/${zenkakuHankakuSlash}.png`);
+                paths.push(`${zenkakuHankakuSlash}.png`);
             }
             
             return paths;
