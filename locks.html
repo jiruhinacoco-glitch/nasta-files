@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>錠前種類</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Meiryo','Yu Gothic',sans-serif;background:#dde4ef;min-height:100vh;}
+.site-header{background:#1a2e5a;padding:14px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.back-btn{color:#fff;text-decoration:none;font-size:0.9rem;background:rgba(255,255,255,0.2);padding:7px 14px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
+.back-btn:hover{background:rgba(255,255,255,0.35);}
+.site-header h1{color:#fff;font-size:1.25rem;font-weight:900;}
+.main{padding:20px 16px 60px;}
+.page-title{color:#1a2e5a;font-size:1.25rem;font-weight:900;margin-bottom:16px;border-left:5px solid #4da6e8;padding-left:12px;}
+/* カード */
+.card-list{display:flex;flex-direction:column;gap:14px;}
+.card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.10);overflow:hidden;}
+.card-header{background:#1a2e5a;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.card-no{color:#fff;font-size:1.2rem;font-weight:900;min-width:36px;}
+.card-category{color:#a8d4f5;font-size:0.85rem;white-space:nowrap;}
+.card-title{color:#fff;font-size:1rem;font-weight:700;flex:1;}
+.card-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.card-photo{width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:#f0f4f8;display:block;cursor:zoom-in;}
+.card-photo-placeholder{width:100%;height:120px;background:#f0f4f8;border:2px dashed #b0bec8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#90a4ae;font-size:0.85rem;text-align:center;line-height:1.6;}
+.card-row{display:flex;gap:8px;align-items:flex-start;}
+.card-label{font-size:0.75rem;font-weight:700;color:#fff;background:#4da6e8;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.card-label.red{background:#e74c3c;}.card-label.orange{background:#f39c12;}.card-label.green{background:#27ae60;}.card-label.dark{background:#555;}
+.card-value{font-size:0.9rem;color:#333;line-height:1.6;}
+.diff-row{display:flex;gap:8px;align-items:center;}
+/* 編集可能セル（カード） */
+.card-editable{font-size:0.9rem;color:#333;line-height:1.6;flex:1;border-radius:4px;padding:4px 6px;outline:none;min-width:0;}
+.card-editable:focus{background:#fff8e1;box-shadow:0 0 0 2px #f39c12;border-radius:4px;}
+.edit-hint{font-size:0.68rem;color:#f39c12;margin-left:4px;opacity:0.8;}
+/* テーブル */
+.table-wrap{display:none;overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.10);}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:0.85rem;}
+thead th{background:#1a2e5a;color:#fff;padding:12px 10px;text-align:center;font-weight:700;white-space:nowrap;}
+tbody tr:nth-child(even){background:#f2f6fb;}
+tbody tr:hover{background:#e3edf8;}
+td{padding:10px;border-bottom:1px solid #dde4ef;vertical-align:middle;}
+.tc{text-align:center;}.no-col{text-align:center;font-weight:700;color:#1a2e5a;font-size:1.1rem;}.cat-col{white-space:nowrap;text-align:center;}
+/* 写真 */
+.photo-cell{text-align:center;}
+.photo-cell img{width:130px;height:100px;object-fit:cover;display:block;margin:0 auto;border-radius:6px;cursor:zoom-in;transition:transform 0.15s;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+.photo-cell img:hover{transform:scale(1.05);}
+.photo-cell .ph{display:none;width:130px;height:100px;background:#f0f4f8;border:2px dashed #b0bec8;border-radius:6px;align-items:center;justify-content:center;flex-direction:column;color:#90a4ae;font-size:0.72rem;text-align:center;margin:0 auto;line-height:1.5;}
+/* 編集可能セル（テーブル） */
+td.editable{cursor:text;position:relative;}
+td.editable[contenteditable="true"]{outline:none;}
+td.editable:hover{background:#fffde7 !important;}
+td.editable:focus{background:#fff8e1 !important;box-shadow:inset 0 0 0 2px #f39c12;border-radius:4px;}
+td.editable::after{content:'✏';font-size:0.65rem;color:#f39c12;position:absolute;top:4px;right:4px;opacity:0;transition:opacity 0.2s;}
+td.editable:hover::after{opacity:1;}
+.save-toast{position:fixed;bottom:24px;right:24px;background:#27ae60;color:#fff;padding:10px 20px;border-radius:8px;font-size:0.9rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.2);display:none;z-index:9000;}
+.save-toast.show{display:block;animation:fadeInOut 2s forwards;}
+@keyframes fadeInOut{0%{opacity:0}10%{opacity:1}70%{opacity:1}100%{opacity:0}}
+/* ライトボックス */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;padding:20px;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+#lightbox-close{position:fixed;top:16px;right:20px;color:#fff;font-size:2.4rem;cursor:pointer;line-height:1;user-select:none;z-index:10000;}
+#lightbox-close:hover{color:#f0c;}
+@media(min-width:900px){
+  .main{padding:28px 28px 60px;max-width:1500px;margin:0 auto;}
+  .card-list{display:none;}
+  .table-wrap{display:block;}
+}
+
+.lock-name{font-weight:700;font-size:0.95rem;color:#1a2e5a;margin-bottom:2px;white-space:pre-line;}
+.lock-desc{font-size:0.82rem;color:#555;white-space:pre-line;line-height:1.6;}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="back-btn" href="index.html">← 戻る</a>
+  <h1>錠前種類</h1>
+</header>
+<main class="main">
+<div class="page-title">錠前種類</div>
+<div class="card-list">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">①</span>
+      <span class="card-category">宅配ボックス</span>
+      <span class="card-title">Z81-MTK</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_01.jpg" alt="①"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_01.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">Z81-MTK
+プッシュボタン錠</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">機械式プッシュボタン錠
+KS-TLU160／TLT240／TLT340／TLT450
+TLP280LB／TLR280LB／TLP360／TLR360LB／TLJ360／TLK</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">②</span>
+      <span class="card-category">宅配ボックス</span>
+      <span class="card-title">Z81-PTK</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_02.jpg" alt="②"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_02.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">Z81-PTK
+プッシュボタン錠</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">機械式プッシュボタン錠
+KS-TLP28／TLP36／TL01R</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">③</span>
+      <span class="card-category">宅配ボックス</span>
+      <span class="card-title">KS-TLG</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_03.jpg" alt="③"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_03.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">KS-TLG
+ダイヤル錠</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">KS-TLGダイヤル錠
+KS-TLG</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">④</span>
+      <span class="card-category">宅配ボックス</span>
+      <span class="card-title">KS-TLH</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_04.jpg" alt="④"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_04.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">KS-TLH
+テンキータイプ</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">TLHシリーズテンキータイプ
+KS-TLH18／TLHT18</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">⑤</span>
+      <span class="card-category">宅配ボックス</span>
+      <span class="card-title">Smart LOCK T20</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_05.jpg" alt="⑤"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_05.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">Smart LOCK T20
+スマートキー</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">Smart LOCK T20スマートキー
+KS-TL03RD／TLR0TRD</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">⑥</span>
+      <span class="card-category">宅配ボックス
+戸建て</span>
+      <span class="card-title">Smart LOCK T01</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_06.jpg" alt="⑥"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_06.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">Smart LOCK T01
+スマートキー</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">Smart LOCK T01 テンキータイプ
+戸建住宅用テンキータイプ</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-no">⑦</span>
+      <span class="card-category">集合ポスト</span>
+      <span class="card-title">Smart LOCK N01</span>
+    </div>
+    <div class="card-body">
+      <img class="card-photo" src="images/lock_07.jpg" alt="⑦"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-photo-placeholder" style="display:none">写真フォルダに<br>images/lock_07.jpg<br>を置いてください</div>
+      <div class="card-row"><span class="card-label">錠前名称</span><span class="card-value" style="white-space:pre-line">Smart LOCK N01
+スマートキー</span></div>
+      <div class="card-row"><span class="card-label dark">代表品番</span><span class="card-value" style="white-space:pre-line">Smart LOCK N01スマートキー
+スマート南京錠</span></div>
+    </div>
+  </div>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>No.</th><th>製品分野</th><th>錠前名称</th><th>写真</th><th>代表的な該当品番や事象など</th></tr></thead>
+<tbody>
+  <tr>
+    <td class="no-col">①</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス</td>
+    <td style="white-space:pre-line">Z81-MTK<br>プッシュボタン錠</td>
+    <td class="photo-cell">
+      <img src="images/lock_01.jpg" alt="①" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_01.jpg</div>
+    </td>
+    <td style="white-space:pre-line">機械式プッシュボタン錠<br>KS-TLU160／TLT240／TLT340／TLT450<br>TLP280LB／TLR280LB／TLP360／TLR360LB／TLJ360／TLK</td>
+  </tr>
+  <tr>
+    <td class="no-col">②</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス</td>
+    <td style="white-space:pre-line">Z81-PTK<br>プッシュボタン錠</td>
+    <td class="photo-cell">
+      <img src="images/lock_02.jpg" alt="②" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_02.jpg</div>
+    </td>
+    <td style="white-space:pre-line">機械式プッシュボタン錠<br>KS-TLP28／TLP36／TL01R</td>
+  </tr>
+  <tr>
+    <td class="no-col">③</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス</td>
+    <td style="white-space:pre-line">KS-TLG<br>ダイヤル錠</td>
+    <td class="photo-cell">
+      <img src="images/lock_03.jpg" alt="③" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_03.jpg</div>
+    </td>
+    <td style="white-space:pre-line">KS-TLGダイヤル錠<br>KS-TLG</td>
+  </tr>
+  <tr>
+    <td class="no-col">④</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス</td>
+    <td style="white-space:pre-line">KS-TLH<br>テンキータイプ</td>
+    <td class="photo-cell">
+      <img src="images/lock_04.jpg" alt="④" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_04.jpg</div>
+    </td>
+    <td style="white-space:pre-line">TLHシリーズテンキータイプ<br>KS-TLH18／TLHT18</td>
+  </tr>
+  <tr>
+    <td class="no-col">⑤</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス</td>
+    <td style="white-space:pre-line">Smart LOCK T20<br>スマートキー</td>
+    <td class="photo-cell">
+      <img src="images/lock_05.jpg" alt="⑤" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_05.jpg</div>
+    </td>
+    <td style="white-space:pre-line">Smart LOCK T20スマートキー<br>KS-TL03RD／TLR0TRD</td>
+  </tr>
+  <tr>
+    <td class="no-col">⑥</td>
+    <td class="cat-col" style="white-space:nowrap">宅配ボックス
+戸建て</td>
+    <td style="white-space:pre-line">Smart LOCK T01<br>スマートキー</td>
+    <td class="photo-cell">
+      <img src="images/lock_06.jpg" alt="⑥" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_06.jpg</div>
+    </td>
+    <td style="white-space:pre-line">Smart LOCK T01 テンキータイプ<br>戸建住宅用テンキータイプ</td>
+  </tr>
+  <tr>
+    <td class="no-col">⑦</td>
+    <td class="cat-col" style="white-space:nowrap">集合ポスト</td>
+    <td style="white-space:pre-line">Smart LOCK N01<br>スマートキー</td>
+    <td class="photo-cell">
+      <img src="images/lock_07.jpg" alt="⑦" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="ph">写真<br>lock_07.jpg</div>
+    </td>
+    <td style="white-space:pre-line">Smart LOCK N01スマートキー<br>スマート南京錠</td>
+  </tr>
+</tbody></table></div>
+</main>
+
+<div id="lightbox">
+  <span id="lightbox-close" onclick="closeLightbox()">✕</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+<div class="save-toast" id="saveToast">💾 保存しました</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.photo-cell img, .card-photo').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src));
+  });
+});
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('lightbox').addEventListener('click', function(e){ if(e.target===this) closeLightbox(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+</script>
+</body></html>

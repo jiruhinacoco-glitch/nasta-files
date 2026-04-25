@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>不具合事例集</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Meiryo','Yu Gothic',sans-serif;background:#dde4ef;min-height:100vh;}
+.site-header{background:#1a2e5a;padding:14px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.back-btn{color:#fff;text-decoration:none;font-size:0.9rem;background:rgba(255,255,255,0.2);padding:7px 14px;border-radius:6px;white-space:nowrap;}
+.back-btn:hover{background:rgba(255,255,255,0.35);}
+.site-header h1{color:#fff;font-size:1.25rem;font-weight:900;}
+.main{padding:20px 16px 60px;}
+.page-title{color:#1a2e5a;font-size:1.2rem;font-weight:900;margin-bottom:14px;border-left:5px solid #4da6e8;padding-left:12px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.edit-note{font-size:0.72rem;color:#4da6e8;font-weight:400;}
+
+/* ======= カード（スマホ） ======= */
+.card-list{display:flex;flex-direction:column;gap:14px;}
+.card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}
+.card-header{background:#1a2e5a;padding:11px 14px;display:flex;align-items:center;gap:10px;}
+.card-no{color:#fff;font-size:1.15rem;font-weight:900;min-width:32px;}
+.card-cat{color:#a8d4f5;font-size:0.82rem;white-space:nowrap;}
+.card-title{color:#fff;font-size:0.95rem;font-weight:700;flex:1;}
+.card-body{padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+.card-photo{width:100%;max-height:220px;object-fit:contain;border-radius:6px;background:#f0f4f8;display:block;cursor:zoom-in;}
+.card-ph{width:100%;height:100px;background:#f0f4f8;border:2px dashed #b0bec8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#90a4ae;font-size:0.82rem;text-align:center;line-height:1.6;}
+.card-row{display:flex;gap:8px;align-items:flex-start;}
+.lbl{font-size:0.73rem;font-weight:700;color:#fff;background:#4da6e8;padding:3px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.lbl.red{background:#e74c3c;}.lbl.org{background:#f39c12;}.lbl.grn{background:#27ae60;}.lbl.drk{background:#555;}
+.card-val{font-size:0.88rem;color:#333;line-height:1.6;flex:1;}
+.card-edit{font-size:0.88rem;color:#333;line-height:1.6;flex:1;border-radius:4px;padding:3px 5px;outline:none;}
+.card-edit:focus{background:#fff8e1;box-shadow:0 0 0 2px #f39c12;}
+.edit-hint{font-size:0.65rem;color:#f39c12;margin-left:3px;}
+
+/* ======= テーブル（PC） ======= */
+.table-wrap{display:none;overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+table{border-collapse:collapse;background:#fff;font-size:0.85rem;table-layout:fixed;width:100%;}
+thead tr{background:#1a2e5a;}
+thead th{
+  color:#fff;padding:10px 8px;text-align:center;font-weight:700;white-space:nowrap;
+  position:relative;overflow:hidden;user-select:none;
+}
+thead th.edit-th{background:#1e3a6e;}
+/* リサイズハンドル */
+.resizer{
+  position:absolute;right:0;top:0;width:6px;height:100%;
+  cursor:col-resize;background:transparent;z-index:1;
+}
+.resizer:hover,.resizer.resizing{background:rgba(255,255,255,0.35);}
+tbody tr:nth-child(even){background:#f2f6fb;}
+tbody tr:hover{background:#eaf2ff;}
+td{padding:9px 8px;border-bottom:1px solid #dde4ef;vertical-align:middle;overflow:hidden;word-break:break-word;}
+.tc{text-align:center;}
+/* 編集セル */
+td.editable{cursor:text;position:relative;}
+td.editable:hover{background:#fffde7 !important;}
+td.editable:focus-within{background:#fff8e1 !important;box-shadow:inset 0 0 0 2px #f39c12;}
+td.editable::after{content:'✏';font-size:0.6rem;color:#f39c12;position:absolute;top:4px;right:4px;opacity:0;transition:opacity .2s;}
+td.editable:hover::after{opacity:1;}
+[contenteditable]{outline:none;}
+/* 写真 */
+.photo-cell{text-align:center;}
+.photo-cell img{width:100%;max-width:120px;height:90px;object-fit:cover;display:block;margin:0 auto;border-radius:6px;cursor:zoom-in;box-shadow:0 2px 6px rgba(0,0,0,.15);transition:transform .15s;}
+.photo-cell img:hover{transform:scale(1.07);}
+.ph-box{display:none;width:100%;max-width:120px;height:90px;background:#f0f4f8;border:2px dashed #b0bec8;border-radius:6px;flex-direction:column;align-items:center;justify-content:center;color:#90a4ae;font-size:0.68rem;text-align:center;margin:0 auto;line-height:1.5;}
+/* ライトボックス */
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:16px;}
+#lb.open{display:flex;}
+#lb img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:8px;}
+#lb-close{position:fixed;top:14px;right:18px;color:#fff;font-size:2.2rem;cursor:pointer;z-index:10000;user-select:none;}
+/* トースト */
+.toast{position:fixed;bottom:22px;right:22px;background:#27ae60;color:#fff;padding:9px 18px;border-radius:8px;font-size:0.88rem;font-weight:700;display:none;z-index:8000;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+.toast.show{display:block;animation:fo 2.2s forwards;}
+@keyframes fo{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+
+@media(min-width:900px){
+  .main{padding:24px 28px 60px;max-width:1700px;margin:0 auto;}
+  .card-list{display:none;}
+  .table-wrap{display:block;}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="back-btn" href="index.html">← 戻る</a>
+  <h1>不具合事例集</h1>
+</header>
+<main class="main">
+<div class="page-title">不具合事例集
+  <span class="edit-note">✏ 黄色列は編集・自動保存　｜　列の右端をドラッグして幅を調整できます</span>
+</div>
+<div class="card-list">
+  <div class="card">
+    <div class="card-header"><span class="card-no">①</span><span class="card-cat">集合ポスト</span><span class="card-title">トルクヒンジ崩れ (クレームとして扱う)</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_01.jpg" alt="①" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_01.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">KS-MB4002PU等の上開き全般ポスト</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f01_H">トルクヒンジパーツ一式の手配</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f01_I">手配＆交換修理見積書送付/日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f01_J">小型の精密プラスドライバー</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f01_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">②</span><span class="card-cat">集合ポスト</span><span class="card-title">ナンバーシール貼り</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_02.jpg" alt="②" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_02.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">ナンバーシール貼り</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f02_H">該当シール番号の手配<br>(ファスカルシール=杉田へ発注)</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f02_I">手配＆交換修理見積書送付/日程調整<br>(ファスカルシールの場合￥500)</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f02_J">マスキングテープ</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f02_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">③</span><span class="card-cat">集合ポスト</span><span class="card-title">ナスタガード軸のはみ出し</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_03.jpg" alt="③" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_03.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">KS-MB4002PU等のナスタガードポスト</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f03_H">なし</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f03_I">現調￥5,500見積書送付/日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f03_J">マイナスドライバー</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f03_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#2ecc71;font-weight:700">★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">④</span><span class="card-cat">集合ポスト</span><span class="card-title">白樹脂(扉ストッパー樹脂)の削り</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_04.jpg" alt="④" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_04.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">KS-MB6002PY等の上向き全般ポスト</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f04_H">なし</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f04_I">現調￥5,500見積書送付/日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f04_J">カッター</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f04_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#2ecc71;font-weight:700">★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑤</span><span class="card-cat">集合ポスト</span><span class="card-title">枠変形 (クレームとして扱う)</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_05.jpg" alt="⑤" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_05.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">横向けポストの枠変形による閉まり不良</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f05_H">A：枠＆扉(シール＆プレート含む)<br>B：本体ごと変更</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f05_I">A：現調枠＆扉の再発注<br>B：本体ごと再発注<br>※可能であればいずれも現調してから判断する</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f05_J">工具一式</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f05_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑥</span><span class="card-cat">集合ポスト</span><span class="card-title">ダイヤル錠：交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_06.jpg" alt="⑥" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_06.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">ダイヤル錠：交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f06_H">ダイヤル錠の手配必要<br>(大半は支店在庫で対応可能)</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f06_I">￥3300＋￥10,400見積書送付/日程調整<br>(※希望ダイヤル番号の場合は別途納期伝達)</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f06_J">アンギュラス</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f06_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#f39c12;font-weight:700">★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑦</span><span class="card-cat">集合ポスト</span><span class="card-title">シリンダー錠：交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_07.jpg" alt="⑦" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_07.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">シリンダー錠：交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f07_H">取扱い工場への手配依頼</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f07_I">￥3300＋￥10,400見積書送付/日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f07_J">アンギュラス</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f07_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#f39c12;font-weight:700">★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑧</span><span class="card-cat">集合ポスト</span><span class="card-title">ラッチ錠：交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_08.jpg" alt="⑧" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_08.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">ラッチ錠：交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f08_H">取扱い工場への手配依頼</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f08_I">￥3300＋￥10,400見積書送付/日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f08_J">アンギュラス</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f08_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#f39c12;font-weight:700">★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑨</span><span class="card-cat">集合ポスト</span><span class="card-title">フラップ＆スプリング交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_09.jpg" alt="⑨" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_09.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">MB301などのフラップが取れた<br>(バネが取れたなど含む)</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f09_H">フラップ関連一式パーツ手配<br>(現在は在庫がないため</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f09_I">￥〇〇〇＋￥10,400見積書送付／日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f09_J">工具一式</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f09_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#8b0000;font-weight:700">★★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑩</span><span class="card-cat">宅配ボックス</span><span class="card-title">プッシュボタン錠前交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_10.jpg" alt="⑩" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_10.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">TLKなどのプッシュボタン錠前交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f10_H">-</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f10_I">￥13,000＋\10,400見積書＆錠前製造依頼書送付／日程調整</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f10_J">-</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f10_K">約1か月～1か月半</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑪</span><span class="card-cat">宅配ボックス</span><span class="card-title">ダイヤル錠前交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_11.jpg" alt="⑪" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_11.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">TLM450/500：ダイヤル錠前交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f11_H">-</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f11_I">-</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f11_J">-</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f11_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑫</span><span class="card-cat">宅配ボックス</span><span class="card-title">基盤交換</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_12.jpg" alt="⑫" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_12.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">TLH18：基盤交換</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f12_H">-</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f12_I">-</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f12_J">-</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f12_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#8b0000;font-weight:700">★★★★</span></span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-no">⑬</span><span class="card-cat">宅配ボックス</span><span class="card-title">宅配ボックス隙間から針金を入れて 配達物を浮かせて鍵開けて取り出し</span></div>
+    <div class="card-body">
+      <img class="card-photo" src="images/fault_13.jpg" alt="⑬" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-ph" style="display:none">写真を images/fault_13.jpg に置いてください</div>
+      <div class="card-row"><span class="lbl">代表品番・事象</span><span class="card-val">該当品番なし-容量サイズ超過により<br>配達物取り出し不可</span></div>
+      <div class="card-row"><span class="lbl drk">必要な手配など<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f13_H">-</span></div>
+      <div class="card-row"><span class="lbl red">必要な客先連絡<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f13_I">-</span></div>
+      <div class="card-row"><span class="lbl grn">必要工具<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f13_J">針金／マイナスドライバー</span></div>
+      <div class="card-row"><span class="lbl org">納期<span class="edit-hint">✏</span></span><span class="card-edit" contenteditable="true" data-key="f13_K">-</span></div>
+      <div class="card-row"><span class="lbl">処理難易度</span><span class="card-val"><span style="color:#e74c3c;font-weight:700">★★★</span></span></div>
+    </div>
+  </div>
+</div>
+<div class="table-wrap"><table id="mainTable">
+<colgroup>
+  <col id="col-no" style="width:46px">
+  <col id="col-cat" style="width:80px">
+  <col id="col-naiyou" style="width:150px">
+  <col id="col-photo" style="width:140px">
+  <col id="col-daihyo" style="width:190px">
+  <col id="col-diff" style="width:74px">
+  <col id="col-haibai" style="width:155px">
+  <col id="col-kyaku" style="width:200px">
+  <col id="col-kougu" style="width:120px">
+  <col id="col-납기" style="width:90px">
+</colgroup>
+<thead><tr>
+  <th class="" id="th-no">No.<div class="resizer" data-col="no"></div></th>
+  <th class="" id="th-cat">製品分野<div class="resizer" data-col="cat"></div></th>
+  <th class="" id="th-naiyou">内容<div class="resizer" data-col="naiyou"></div></th>
+  <th class="" id="th-photo">写真<div class="resizer" data-col="photo"></div></th>
+  <th class="" id="th-daihyo">代表的な該当品番や事象など<div class="resizer" data-col="daihyo"></div></th>
+  <th class="" id="th-diff">処理難易度<div class="resizer" data-col="diff"></div></th>
+  <th class=" edit-th" id="th-haibai">必要な手配など ✏<div class="resizer" data-col="haibai"></div></th>
+  <th class=" edit-th" id="th-kyaku">必要な客先連絡 ✏<div class="resizer" data-col="kyaku"></div></th>
+  <th class=" edit-th" id="th-kougu">必要工具 ✏<div class="resizer" data-col="kougu"></div></th>
+  <th class=" edit-th" id="th-납기">納期 ✏<div class="resizer" data-col="납기"></div></th>
+</tr></thead>
+<tbody>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">①</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>トルクヒンジ崩れ<br>(クレームとして扱う)</td>
+    <td class="photo-cell"><img src="images/fault_01.jpg" alt="①" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_01.jpg</div></td>
+    <td>KS-MB4002PU等の上開き全般ポスト</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f01_H">トルクヒンジパーツ一式の手配</td><td class="editable" contenteditable="true" data-key="f01_I">手配＆交換修理見積書送付/日程調整</td><td class="editable" contenteditable="true" data-key="f01_J">小型の精密プラスドライバー</td><td class="editable" contenteditable="true" data-key="f01_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">②</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>ナンバーシール貼り</td>
+    <td class="photo-cell"><img src="images/fault_02.jpg" alt="②" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_02.jpg</div></td>
+    <td>ナンバーシール貼り</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f02_H">該当シール番号の手配<br>(ファスカルシール=杉田へ発注)</td><td class="editable" contenteditable="true" data-key="f02_I">手配＆交換修理見積書送付/日程調整<br>(ファスカルシールの場合￥500)</td><td class="editable" contenteditable="true" data-key="f02_J">マスキングテープ</td><td class="editable" contenteditable="true" data-key="f02_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">③</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>ナスタガード軸のはみ出し</td>
+    <td class="photo-cell"><img src="images/fault_03.jpg" alt="③" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_03.jpg</div></td>
+    <td>KS-MB4002PU等のナスタガードポスト</td>
+    <td class="tc"><span style="color:#2ecc71;font-weight:700">★</span></td>
+    <td class="editable" contenteditable="true" data-key="f03_H">なし</td><td class="editable" contenteditable="true" data-key="f03_I">現調￥5,500見積書送付/日程調整</td><td class="editable" contenteditable="true" data-key="f03_J">マイナスドライバー</td><td class="editable" contenteditable="true" data-key="f03_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">④</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>白樹脂(扉ストッパー樹脂)の削り</td>
+    <td class="photo-cell"><img src="images/fault_04.jpg" alt="④" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_04.jpg</div></td>
+    <td>KS-MB6002PY等の上向き全般ポスト</td>
+    <td class="tc"><span style="color:#2ecc71;font-weight:700">★</span></td>
+    <td class="editable" contenteditable="true" data-key="f04_H">なし</td><td class="editable" contenteditable="true" data-key="f04_I">現調￥5,500見積書送付/日程調整</td><td class="editable" contenteditable="true" data-key="f04_J">カッター</td><td class="editable" contenteditable="true" data-key="f04_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑤</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>枠変形<br>(クレームとして扱う)</td>
+    <td class="photo-cell"><img src="images/fault_05.jpg" alt="⑤" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_05.jpg</div></td>
+    <td>横向けポストの枠変形による閉まり不良</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f05_H">A：枠＆扉(シール＆プレート含む)<br>B：本体ごと変更</td><td class="editable" contenteditable="true" data-key="f05_I">A：現調枠＆扉の再発注<br>B：本体ごと再発注<br>※可能であればいずれも現調してから判断する</td><td class="editable" contenteditable="true" data-key="f05_J">工具一式</td><td class="editable" contenteditable="true" data-key="f05_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑥</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>ダイヤル錠：交換</td>
+    <td class="photo-cell"><img src="images/fault_06.jpg" alt="⑥" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_06.jpg</div></td>
+    <td>ダイヤル錠：交換</td>
+    <td class="tc"><span style="color:#f39c12;font-weight:700">★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f06_H">ダイヤル錠の手配必要<br>(大半は支店在庫で対応可能)</td><td class="editable" contenteditable="true" data-key="f06_I">￥3300＋￥10,400見積書送付/日程調整<br>(※希望ダイヤル番号の場合は別途納期伝達)</td><td class="editable" contenteditable="true" data-key="f06_J">アンギュラス</td><td class="editable" contenteditable="true" data-key="f06_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑦</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>シリンダー錠：交換</td>
+    <td class="photo-cell"><img src="images/fault_07.jpg" alt="⑦" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_07.jpg</div></td>
+    <td>シリンダー錠：交換</td>
+    <td class="tc"><span style="color:#f39c12;font-weight:700">★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f07_H">取扱い工場への手配依頼</td><td class="editable" contenteditable="true" data-key="f07_I">￥3300＋￥10,400見積書送付/日程調整</td><td class="editable" contenteditable="true" data-key="f07_J">アンギュラス</td><td class="editable" contenteditable="true" data-key="f07_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑧</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>ラッチ錠：交換</td>
+    <td class="photo-cell"><img src="images/fault_08.jpg" alt="⑧" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_08.jpg</div></td>
+    <td>ラッチ錠：交換</td>
+    <td class="tc"><span style="color:#f39c12;font-weight:700">★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f08_H">取扱い工場への手配依頼</td><td class="editable" contenteditable="true" data-key="f08_I">￥3300＋￥10,400見積書送付/日程調整</td><td class="editable" contenteditable="true" data-key="f08_J">アンギュラス</td><td class="editable" contenteditable="true" data-key="f08_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑨</td>
+    <td class="tc" style="white-space:nowrap;">集合ポスト</td>
+    <td>フラップ＆スプリング交換</td>
+    <td class="photo-cell"><img src="images/fault_09.jpg" alt="⑨" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_09.jpg</div></td>
+    <td>MB301などのフラップが取れた<br>(バネが取れたなど含む)</td>
+    <td class="tc"><span style="color:#8b0000;font-weight:700">★★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f09_H">フラップ関連一式パーツ手配<br>(現在は在庫がないため</td><td class="editable" contenteditable="true" data-key="f09_I">￥〇〇〇＋￥10,400見積書送付／日程調整</td><td class="editable" contenteditable="true" data-key="f09_J">工具一式</td><td class="editable" contenteditable="true" data-key="f09_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑩</td>
+    <td class="tc" style="white-space:nowrap;">宅配ボックス</td>
+    <td>プッシュボタン錠前交換</td>
+    <td class="photo-cell"><img src="images/fault_10.jpg" alt="⑩" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_10.jpg</div></td>
+    <td>TLKなどのプッシュボタン錠前交換</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f10_H">-</td><td class="editable" contenteditable="true" data-key="f10_I">￥13,000＋\10,400見積書＆錠前製造依頼書送付／日程調整</td><td class="editable" contenteditable="true" data-key="f10_J">-</td><td class="editable" contenteditable="true" data-key="f10_K">約1か月～1か月半</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑪</td>
+    <td class="tc" style="white-space:nowrap;">宅配ボックス</td>
+    <td>ダイヤル錠前交換</td>
+    <td class="photo-cell"><img src="images/fault_11.jpg" alt="⑪" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_11.jpg</div></td>
+    <td>TLM450/500：ダイヤル錠前交換</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f11_H">-</td><td class="editable" contenteditable="true" data-key="f11_I">-</td><td class="editable" contenteditable="true" data-key="f11_J">-</td><td class="editable" contenteditable="true" data-key="f11_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑫</td>
+    <td class="tc" style="white-space:nowrap;">宅配ボックス</td>
+    <td>基盤交換</td>
+    <td class="photo-cell"><img src="images/fault_12.jpg" alt="⑫" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_12.jpg</div></td>
+    <td>TLH18：基盤交換</td>
+    <td class="tc"><span style="color:#8b0000;font-weight:700">★★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f12_H">-</td><td class="editable" contenteditable="true" data-key="f12_I">-</td><td class="editable" contenteditable="true" data-key="f12_J">-</td><td class="editable" contenteditable="true" data-key="f12_K">-</td>
+  </tr>
+  <tr>
+    <td class="tc" style="font-weight:700;color:#1a2e5a;">⑬</td>
+    <td class="tc" style="white-space:nowrap;">宅配ボックス</td>
+    <td>宅配ボックス隙間から針金を入れて<br>配達物を浮かせて鍵開けて取り出し</td>
+    <td class="photo-cell"><img src="images/fault_13.jpg" alt="⑬" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ph-box">写真<br>fault_13.jpg</div></td>
+    <td>該当品番なし-容量サイズ超過により<br>配達物取り出し不可</td>
+    <td class="tc"><span style="color:#e74c3c;font-weight:700">★★★</span></td>
+    <td class="editable" contenteditable="true" data-key="f13_H">-</td><td class="editable" contenteditable="true" data-key="f13_I">-</td><td class="editable" contenteditable="true" data-key="f13_J">針金／マイナスドライバー</td><td class="editable" contenteditable="true" data-key="f13_K">-</td>
+  </tr>
+</tbody></table></div>
+</main>
+
+<div id="lb"><span id="lb-close" onclick="closeLB()">✕</span><img id="lb-img" src="" alt=""></div>
+<div class="toast" id="toast">💾 保存しました</div>
+
+<script>
+const LS_EDIT = 'faults_edits_v2';
+const LS_COLS = 'faults_cols_v2';
+const DEFAULT_WIDTHS = {'no': 46, 'cat': 80, 'naiyou': 150, 'photo': 140, 'daihyo': 190, 'diff': 74, 'haibai': 155, 'kyaku': 200, 'kougu': 120, '납기': 90};
+
+function loadEdits(){ try{ return JSON.parse(localStorage.getItem(LS_EDIT)||'{}'); }catch(e){ return {}; } }
+function saveEdits(d){ localStorage.setItem(LS_EDIT, JSON.stringify(d)); }
+function loadColWidths(){ try{ return JSON.parse(localStorage.getItem(LS_COLS)||'{}'); }catch(e){ return {}; } }
+function saveColWidths(d){ localStorage.setItem(LS_COLS, JSON.stringify(d)); }
+
+function showToast(){
+  const t = document.getElementById('toast');
+  t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 列幅を復元
+  const cw = loadColWidths();
+  Object.entries({...DEFAULT_WIDTHS, ...cw}).forEach(([k,w]) => {
+    const col = document.getElementById('col-'+k);
+    if (col) col.style.width = w + 'px';
+  });
+
+  // 編集セル: 保存データ復元
+  const edits = loadEdits();
+  document.querySelectorAll('[data-key]').forEach(el => {
+    if (edits[el.dataset.key] !== undefined) el.innerHTML = edits[el.dataset.key];
+    el.addEventListener('blur', () => {
+      const d = loadEdits();
+      d[el.dataset.key] = el.innerHTML;
+      saveEdits(d);
+      showToast();
+    });
+    el.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); el.blur(); }
+    });
+  });
+
+  // 写真ライトボックス
+  document.querySelectorAll('.photo-cell img, .card-photo').forEach(img => {
+    img.addEventListener('click', () => { if(img.complete && img.naturalWidth>0) openLB(img.src); });
+  });
+
+  // 列リサイズ
+  initColResize();
+});
+
+// ===== 列リサイズ =====
+function initColResize() {
+  document.querySelectorAll('.resizer').forEach(resizer => {
+    const colKey = resizer.dataset.col;
+    let startX, startW;
+
+    resizer.addEventListener('mousedown', e => {
+      e.preventDefault();
+      startX = e.pageX;
+      const col = document.getElementById('col-' + colKey);
+      startW = parseInt(col.style.width) || col.offsetWidth;
+      resizer.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      function onMove(e) {
+        const diff = e.pageX - startX;
+        const newW = Math.max(50, startW + diff);
+        col.style.width = newW + 'px';
+      }
+      function onUp() {
+        resizer.classList.remove('resizing');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        // 保存
+        const cw = loadColWidths();
+        const col = document.getElementById('col-' + colKey);
+        cw[colKey] = parseInt(col.style.width);
+        saveColWidths(cw);
+        showToast();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // タッチ対応
+    resizer.addEventListener('touchstart', e => {
+      e.preventDefault();
+      startX = e.touches[0].pageX;
+      const col = document.getElementById('col-' + colKey);
+      startW = parseInt(col.style.width) || col.offsetWidth;
+
+      function onMove(e) {
+        const diff = e.touches[0].pageX - startX;
+        const newW = Math.max(50, startW + diff);
+        col.style.width = newW + 'px';
+      }
+      function onEnd() {
+        const cw = loadColWidths();
+        const col = document.getElementById('col-' + colKey);
+        cw[colKey] = parseInt(col.style.width);
+        saveColWidths(cw);
+        showToast();
+        resizer.removeEventListener('touchmove', onMove);
+        resizer.removeEventListener('touchend', onEnd);
+      }
+      resizer.addEventListener('touchmove', onMove, {passive:false});
+      resizer.addEventListener('touchend', onEnd);
+    }, {passive:false});
+  });
+}
+
+function openLB(src){ document.getElementById('lb-img').src=src; document.getElementById('lb').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLB(){ document.getElementById('lb').classList.remove('open'); document.body.style.overflow=''; }
+document.getElementById('lb').addEventListener('click', function(e){ if(e.target===this) closeLB(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLB(); });
+</script>
+</body></html>

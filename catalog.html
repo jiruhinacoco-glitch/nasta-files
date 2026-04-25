@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旧カタログ(ポスト・宅配ボックス)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52,152,219,0.3);
+        }
+
+        .filter-btn.active {
+            background: #27ae60;
+        }
+
+        .stats {
+            margin-top: 15px;
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .product-card.no-link {
+            cursor: default;
+        }
+
+        .product-card.no-link:hover {
+            transform: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            background: #f8f9fa;
+            padding: 15px;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-model {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .product-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .product-spec {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        /* 前入前出 - 青色 */
+        .product-spec.zenzen {
+            background: #e8f4f8;
+            color: #3498db;
+        }
+
+        /* 前入後出 - 緑色 */
+        .product-spec.zengo {
+            background: #e8f8f0;
+            color: #27ae60;
+        }
+
+        /* 廃番タグ - 灰色 */
+        .haiban-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .product-category {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .product-image {
+                height: 150px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="icon">📦</span>旧カタログ(ポスト・宅配ボックス)</h1>
+            <div class="subtitle">製品一覧</div>
+            <div class="filters" id="filters"></div>
+            <div class="stats" id="stats"></div>
+        </header>
+
+        <div id="productsContainer">
+            <div class="loading">製品を読み込み中...</div>
+        </div>
+    </div>
+
+    <script>
+        const PRODUCTS_DATA = [
+  {
+    "model": "KS-MB101S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/136.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB202S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/137.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB212S",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/134.html"
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB30SB",
+    "excel_row": 70,
+    "excel_col": 19,
+    "image": "image_076.png",
+    "url": "https://www.nasta.co.jp/product/post/151.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB31S",
+    "excel_row": 121,
+    "excel_col": 1,
+    "image": "image_119.png",
+    "url": "https://www.nasta.co.jp/product/post/057.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-MB30SF",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/035.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-MB301S-2(ヨコ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/132.html"
+  },
+  {
+    "model": "KS-MB301S-3(ヨコ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/132.html"
+  },
+  {
+    "model": "KS-MB301S-2(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/133.html"
+  },
+  {
+    "model": "KS-MB301S-3(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/133.html"
+  },
+  {
+    "model": "KS-MB302S-2(ヨコ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/040.html"
+  },
+  {
+    "model": "KS-MB302S-3(ヨコ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/040.html"
+  },
+  {
+    "model": "KS-MB302S-4(ヨコ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/040.html"
+  },
+  {
+    "model": "KS-MB302S-2(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/041.html"
+  },
+  {
+    "model": "KS-MB302S-3(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/041.html"
+  },
+  {
+    "model": "KS-MB302S-4(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/041.html"
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-2(タテ型)",
+    "excel_row": 93,
+    "excel_col": 7,
+    "image": "image_095.png",
+    "url": "https://www.nasta.co.jp/product/post/039.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-2(ヨコ型)",
+    "excel_row": 86,
+    "excel_col": 19,
+    "image": "image_090.png",
+    "url": "https://www.nasta.co.jp/product/post/038.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-3(タテ型)",
+    "excel_row": 93,
+    "excel_col": 10,
+    "image": "image_092.png",
+    "url": "https://www.nasta.co.jp/product/post/039.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-3(ヨコ型)",
+    "excel_row": 93,
+    "excel_col": 1,
+    "image": "image_091.png",
+    "url": "https://www.nasta.co.jp/product/post/038.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-4(タテ型)",
+    "excel_row": 93,
+    "excel_col": 13,
+    "image": "image_093.png",
+    "url": "https://www.nasta.co.jp/product/post/039.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB303S-4(ヨコ型)",
+    "excel_row": 93,
+    "excel_col": 4,
+    "image": "image_094.png",
+    "url": "https://www.nasta.co.jp/product/post/038.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB305S-2",
+    "excel_row": 86,
+    "excel_col": 13,
+    "image": "image_088.png",
+    "url": "https://www.nasta.co.jp/product/post/037.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB305S-3",
+    "excel_row": 86,
+    "excel_col": 16,
+    "image": "image_089.png",
+    "url": "https://www.nasta.co.jp/product/post/037.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB311S-2(ヨコ型)",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/130.html"
+  },
+  {
+    "model": "KS-MB311S-3(ヨコ型)",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/130.html"
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-2(タテ型)",
+    "excel_row": 49,
+    "excel_col": 7,
+    "image": "image_053.png",
+    "url": "https://www.nasta.co.jp/product/post/023.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-2(ヨコ型)",
+    "excel_row": 42,
+    "excel_col": 19,
+    "image": "image_049.png",
+    "url": "https://www.nasta.co.jp/product/post/022.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-3(タテ型)",
+    "excel_row": 49,
+    "excel_col": 10,
+    "image": "image_052.png",
+    "url": "https://www.nasta.co.jp/product/post/023.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-3(ヨコ型)",
+    "excel_row": 49,
+    "excel_col": 1,
+    "image": "image_050.png",
+    "url": "https://www.nasta.co.jp/product/post/022.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-4(タテ型)",
+    "excel_row": 49,
+    "excel_col": 13,
+    "image": "image_054.png",
+    "url": "https://www.nasta.co.jp/product/post/023.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB312S-4(ヨコ型)",
+    "excel_row": 49,
+    "excel_col": 4,
+    "image": "image_051.png",
+    "url": "https://www.nasta.co.jp/product/post/022.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-2(タテ型)",
+    "excel_row": 42,
+    "excel_col": 10,
+    "image": "image_046.png",
+    "url": "https://www.nasta.co.jp/product/post/021.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-2(ヨコ型)",
+    "excel_row": 42,
+    "excel_col": 1,
+    "image": "image_042.png",
+    "url": "https://www.nasta.co.jp/product/post/020.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-3(タテ型)",
+    "excel_row": 42,
+    "excel_col": 13,
+    "image": "image_047.png",
+    "url": "https://www.nasta.co.jp/product/post/021.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-3(ヨコ型)",
+    "excel_row": 42,
+    "excel_col": 4,
+    "image": "image_043.png",
+    "url": "https://www.nasta.co.jp/product/post/020.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-4(タテ型)",
+    "excel_row": 42,
+    "excel_col": 16,
+    "image": "image_048.png",
+    "url": "https://www.nasta.co.jp/product/post/021.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB313S-4(ヨコ型)",
+    "excel_row": 42,
+    "excel_col": 7,
+    "image": "image_045.png",
+    "url": "https://www.nasta.co.jp/product/post/020.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB314S-2K",
+    "excel_row": 28,
+    "excel_col": 19,
+    "image": "image_035.png",
+    "url": "https://www.nasta.co.jp/product/post/016.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB314S-3K",
+    "excel_row": 35,
+    "excel_col": 1,
+    "image": "image_036.png",
+    "url": "https://www.nasta.co.jp/product/post/016.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB315S-2",
+    "excel_row": 21,
+    "excel_col": 10,
+    "image": "image_025.png",
+    "url": "https://www.nasta.co.jp/product/post/018.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB315S-3",
+    "excel_row": 21,
+    "excel_col": 13,
+    "image": "image_027.png",
+    "url": "https://www.nasta.co.jp/product/post/018.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB321S-2",
+    "excel_row": 114,
+    "excel_col": 10,
+    "image": "image_115.png",
+    "url": "https://www.nasta.co.jp/product/post/129.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB321S-3",
+    "excel_row": 114,
+    "excel_col": 13,
+    "image": "image_116.png",
+    "url": "https://www.nasta.co.jp/product/post/129.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB322S-2",
+    "excel_row": 63,
+    "excel_col": 19,
+    "image": "image_070.png",
+    "url": "https://www.nasta.co.jp/product/post/031.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB322S-3",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "url": "https://www.nasta.co.jp/product/post/031.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB322S-4",
+    "excel_row": 70,
+    "excel_col": 4,
+    "image": "image_071.png",
+    "url": "https://www.nasta.co.jp/product/post/031.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB323S-2",
+    "excel_row": 63,
+    "excel_col": 10,
+    "image": "image_067.png",
+    "url": "https://www.nasta.co.jp/product/post/030.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB323S-3",
+    "excel_row": 63,
+    "excel_col": 13,
+    "image": "image_068.png",
+    "url": "https://www.nasta.co.jp/product/post/030.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB323S-4",
+    "excel_row": 63,
+    "excel_col": 16,
+    "image": "image_069.png",
+    "url": "https://www.nasta.co.jp/product/post/030.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB324S-2K",
+    "excel_row": 35,
+    "excel_col": 4,
+    "image": "image_037.png",
+    "url": "https://www.nasta.co.jp/product/post/016.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB324S-3K",
+    "excel_row": 35,
+    "excel_col": 7,
+    "image": "image_038.png",
+    "url": "https://www.nasta.co.jp/product/post/016.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB325S-2",
+    "excel_row": 63,
+    "excel_col": 4,
+    "image": "image_065.png",
+    "url": "https://www.nasta.co.jp/product/post/029.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB325S-3",
+    "excel_row": 63,
+    "excel_col": 7,
+    "image": "image_066.png",
+    "url": "https://www.nasta.co.jp/product/post/029.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB326S",
+    "excel_row": 114,
+    "excel_col": 7,
+    "image": "image_114.png",
+    "url": "https://www.nasta.co.jp/product/post/053.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB33S",
+    "excel_row": 70,
+    "excel_col": 10,
+    "image": "image_073.png",
+    "url": "https://www.nasta.co.jp/product/post/033.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB34S",
+    "excel_row": 114,
+    "excel_col": 19,
+    "image": "image_118.png",
+    "url": "https://www.nasta.co.jp/product/post/056.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-MB401S-2(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/045.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB401S-3(タテ型)",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/045.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB401S-2(ヨコ型)",
+    "excel_row": 100,
+    "excel_col": 4,
+    "image": "image_099.png",
+    "url": "https://www.nasta.co.jp/product/post/044.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB401S-3(ヨコ型)",
+    "excel_row": 100,
+    "excel_col": 7,
+    "image": "image_100.png",
+    "url": "https://www.nasta.co.jp/product/post/044.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB402S-2",
+    "excel_row": 107,
+    "excel_col": 1,
+    "image": "image_105.png",
+    "url": "https://www.nasta.co.jp/product/post/047.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB402S-3",
+    "excel_row": 107,
+    "excel_col": 4,
+    "image": "image_106.png",
+    "url": "https://www.nasta.co.jp/product/post/047.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB402SA-2",
+    "excel_row": 100,
+    "excel_col": 16,
+    "image": "image_103.png",
+    "url": "https://www.nasta.co.jp/product/post/046.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB402SA-3",
+    "excel_row": 100,
+    "excel_col": 19,
+    "image": "image_104.png",
+    "url": "https://www.nasta.co.jp/product/post/046.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB404S-2",
+    "excel_row": 107,
+    "excel_col": 7,
+    "image": "image_107.png",
+    "url": "https://www.nasta.co.jp/product/post/049.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB404S-3",
+    "excel_row": 107,
+    "excel_col": 10,
+    "image": "image_108.png",
+    "url": "https://www.nasta.co.jp/product/post/049.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB411S-2(タテ型)",
+    "excel_row": 56,
+    "excel_col": 1,
+    "image": "image_057.png",
+    "url": "https://www.nasta.co.jp/product/post/025.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB411S-2(ヨコ型)",
+    "excel_row": 49,
+    "excel_col": 16,
+    "image": "image_055.png",
+    "url": "https://www.nasta.co.jp/product/post/024.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB411S-3(タテ型)",
+    "excel_row": 56,
+    "excel_col": 4,
+    "image": "image_058.png",
+    "url": "https://www.nasta.co.jp/product/post/025.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB411S-3(ヨコ型)",
+    "excel_row": 49,
+    "excel_col": 19,
+    "image": "image_056.png",
+    "url": "https://www.nasta.co.jp/product/post/024.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB412S-2",
+    "excel_row": 56,
+    "excel_col": 13,
+    "image": "image_061.png",
+    "url": "https://www.nasta.co.jp/product/post/128.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB412S-3",
+    "excel_row": 56,
+    "excel_col": 16,
+    "image": "image_062.png",
+    "url": "https://www.nasta.co.jp/product/post/128.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB414S-3",
+    "excel_row": 35,
+    "excel_col": 10,
+    "image": "image_039.png",
+    "url": "https://www.nasta.co.jp/product/post/017.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB424S-2",
+    "excel_row": 56,
+    "excel_col": 19,
+    "image": "image_063.png",
+    "url": "https://www.nasta.co.jp/product/post/028.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB424S-3",
+    "excel_row": 63,
+    "excel_col": 1,
+    "image": "image_064.png",
+    "url": "https://www.nasta.co.jp/product/post/028.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB501S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/054.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB502S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/127.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB503S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/126.html"
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB506S",
+    "excel_row": 100,
+    "excel_col": 1,
+    "image": "image_098.png",
+    "url": "https://www.nasta.co.jp/product/post/043.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB507S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/063.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-MB508S",
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "url": "https://www.nasta.co.jp/product/post/064.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-MB513S",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/post/125.html"
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB514SN-2",
+    "excel_row": 35,
+    "excel_col": 13,
+    "image": "image_040.png",
+    "url": "https://www.nasta.co.jp/product/post/019.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB514SN-3",
+    "excel_row": 35,
+    "excel_col": 16,
+    "image": "image_041.png",
+    "url": "https://www.nasta.co.jp/product/post/019.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB515S",
+    "excel_row": 35,
+    "excel_col": 19,
+    "image": "image_044.png",
+    "url": "https://www.nasta.co.jp/product/post/123.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB601S",
+    "excel_row": 121,
+    "excel_col": 19,
+    "image": "image_125.png",
+    "url": "https://www.nasta.co.jp/product/post/061.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB602S",
+    "excel_row": 128,
+    "excel_col": 1,
+    "image": "image_126.png",
+    "url": "https://www.nasta.co.jp/product/post/061.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB603S",
+    "excel_row": 128,
+    "excel_col": 4,
+    "image": "image_127.png",
+    "url": "https://www.nasta.co.jp/product/post/061.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB604S",
+    "excel_row": 121,
+    "excel_col": 4,
+    "image": "image_120.png",
+    "url": "https://www.nasta.co.jp/product/post/058.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB605SP",
+    "excel_row": 121,
+    "excel_col": 16,
+    "image": "image_124.png",
+    "url": "https://www.nasta.co.jp/product/post/121.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB605SS",
+    "excel_row": 121,
+    "excel_col": 13,
+    "image": "image_123.png",
+    "url": "https://www.nasta.co.jp/product/post/122.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB606S",
+    "excel_row": 128,
+    "excel_col": 7,
+    "image": "image_128.png",
+    "url": "https://www.nasta.co.jp/product/post/120.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB607S-2",
+    "excel_row": 93,
+    "excel_col": 16,
+    "image": "image_096.png",
+    "url": "https://www.nasta.co.jp/product/post/042.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB607S-3",
+    "excel_row": 93,
+    "excel_col": 19,
+    "image": "image_097.png",
+    "url": "https://www.nasta.co.jp/product/post/042.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB608S",
+    "excel_row": 114,
+    "excel_col": 4,
+    "image": "image_113.png",
+    "url": "https://www.nasta.co.jp/product/post/036.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB609S",
+    "excel_row": 107,
+    "excel_col": 16,
+    "image": "image_110.png",
+    "url": "https://www.nasta.co.jp/product/post/052.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB611S",
+    "excel_row": 70,
+    "excel_col": 13,
+    "image": "image_074.png",
+    "url": "https://www.nasta.co.jp/product/post/034.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB612S",
+    "excel_row": 70,
+    "excel_col": 16,
+    "image": "image_075.png",
+    "url": "https://www.nasta.co.jp/product/post/034.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB614S-2",
+    "excel_row": 21,
+    "excel_col": 4,
+    "image": "image_022.png",
+    "url": "https://www.nasta.co.jp/product/post/011.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB614S-3",
+    "excel_row": 21,
+    "excel_col": 7,
+    "image": "image_024.png",
+    "url": "https://www.nasta.co.jp/product/post/011.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB617S-2",
+    "excel_row": 28,
+    "excel_col": 1,
+    "image": "image_029.png",
+    "url": "https://www.nasta.co.jp/product/post/013.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB617S-3",
+    "excel_row": 28,
+    "excel_col": 4,
+    "image": "image_030.png",
+    "url": "https://www.nasta.co.jp/product/post/013.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB617SA-2L",
+    "excel_row": 21,
+    "excel_col": 16,
+    "image": "image_026.png",
+    "url": "https://www.nasta.co.jp/product/post/012.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB617SA-3L",
+    "excel_row": 21,
+    "excel_col": 19,
+    "image": "image_028.png",
+    "url": "https://www.nasta.co.jp/product/post/012.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB619S",
+    "excel_row": 56,
+    "excel_col": 10,
+    "image": "image_060.png",
+    "url": "https://www.nasta.co.jp/product/post/027.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB621S",
+    "excel_row": 114,
+    "excel_col": 16,
+    "image": "image_117.png",
+    "url": "https://www.nasta.co.jp/product/post/056.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB622S",
+    "excel_row": 70,
+    "excel_col": 7,
+    "image": "image_072.png",
+    "url": "https://www.nasta.co.jp/product/post/032.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB703S-K-MG",
+    "excel_row": 114,
+    "excel_col": 1,
+    "image": "image_112.png",
+    "url": "https://www.nasta.co.jp/product/post/119.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB705SS-K",
+    "excel_row": 121,
+    "excel_col": 10,
+    "image": "image_122.png",
+    "url": "https://www.nasta.co.jp/product/post/060.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB711S-2K",
+    "excel_row": 28,
+    "excel_col": 13,
+    "image": "image_033.png",
+    "url": "https://www.nasta.co.jp/product/post/060.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB711S-3K",
+    "excel_row": 28,
+    "excel_col": 16,
+    "image": "image_034.png",
+    "url": "https://www.nasta.co.jp/product/post/060.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB803S-PB-MG",
+    "excel_row": 107,
+    "excel_col": 19,
+    "image": "image_111.png",
+    "url": "https://www.nasta.co.jp/product/post/118.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB805SS",
+    "excel_row": 121,
+    "excel_col": 7,
+    "image": "image_121.png",
+    "url": "https://www.nasta.co.jp/product/post/059.html",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB809S",
+    "excel_row": 107,
+    "excel_col": 13,
+    "image": "image_109.png",
+    "url": "https://www.nasta.co.jp/product/post/050.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB811S-2",
+    "excel_row": 28,
+    "excel_col": 7,
+    "image": "image_031.png",
+    "url": "https://www.nasta.co.jp/product/post/014.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB811S-3",
+    "excel_row": 28,
+    "excel_col": 10,
+    "image": "image_032.png",
+    "url": "https://www.nasta.co.jp/product/post/014.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-MB812S",
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "url": "https://www.nasta.co.jp/product/post/009.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB814S-2PK",
+    "excel_row": 14,
+    "excel_col": 19,
+    "image": "image_021.png",
+    "url": "https://www.nasta.co.jp/product/post/010.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB814S-3PK",
+    "excel_row": 21,
+    "excel_col": 1,
+    "image": "image_023.png",
+    "url": "https://www.nasta.co.jp/product/post/010.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB819S",
+    "excel_row": 56,
+    "excel_col": 7,
+    "image": "image_059.png",
+    "url": "https://www.nasta.co.jp/product/post/026.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-2(タテ型)",
+    "excel_row": 79,
+    "excel_col": 13,
+    "image": "image_081.png",
+    "url": "https://www.nasta.co.jp/product/post/004.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-2(ヨコ型)",
+    "excel_row": 79,
+    "excel_col": 4,
+    "image": "image_078.png",
+    "haiban": false
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-3(タテ型)",
+    "excel_row": 79,
+    "excel_col": 16,
+    "image": "image_082.png",
+    "url": "https://www.nasta.co.jp/product/post/004.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-3(ヨコ型)",
+    "excel_row": 79,
+    "excel_col": 7,
+    "image": "image_079.png",
+    "url": "https://www.nasta.co.jp/product/post/003.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-4(タテ型)",
+    "excel_row": 79,
+    "excel_col": 19,
+    "image": "image_083.png",
+    "url": "https://www.nasta.co.jp/product/post/004.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB3001P-4(ヨコ型)",
+    "excel_row": 79,
+    "excel_col": 10,
+    "image": "image_080.png",
+    "url": "https://www.nasta.co.jp/product/post/003.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-2(タテ型)",
+    "excel_row": 7,
+    "excel_col": 13,
+    "image": "image_012.png",
+    "url": "https://www.nasta.co.jp/product/post/002.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-2(ヨコ型)",
+    "excel_row": 7,
+    "excel_col": 4,
+    "image": "image_009.png",
+    "url": "https://www.nasta.co.jp/product/post/001.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-3(タテ型)",
+    "excel_row": 7,
+    "excel_col": 16,
+    "image": "image_013.png",
+    "url": "https://www.nasta.co.jp/product/post/002.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-3(ヨコ型)",
+    "excel_row": 7,
+    "excel_col": 7,
+    "image": "image_010.png",
+    "url": "https://www.nasta.co.jp/product/post/001.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-4(タテ型)",
+    "excel_row": 7,
+    "excel_col": 19,
+    "image": "image_014.png",
+    "url": "https://www.nasta.co.jp/product/post/002.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB3101P-4(ヨコ型)",
+    "excel_row": 7,
+    "excel_col": 10,
+    "image": "image_011.png",
+    "url": "https://www.nasta.co.jp/product/post/001.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB4001P-2",
+    "excel_row": 86,
+    "excel_col": 1,
+    "image": "image_084.png",
+    "url": "https://www.nasta.co.jp/product/post/006.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB4001P-3",
+    "excel_row": 86,
+    "excel_col": 4,
+    "image": "image_085.png",
+    "url": "https://www.nasta.co.jp/product/post/006.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB4101P-2",
+    "excel_row": 14,
+    "excel_col": 4,
+    "image": "image_016.png",
+    "url": "https://www.nasta.co.jp/product/post/005.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB4101P-3",
+    "excel_row": 14,
+    "excel_col": 7,
+    "image": "image_017.png",
+    "url": "https://www.nasta.co.jp/product/post/005.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB6001P-2",
+    "excel_row": 86,
+    "excel_col": 7,
+    "image": "image_087.png",
+    "url": "https://www.nasta.co.jp/product/post/008.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入前出",
+    "spec": "前入前出",
+    "model": "KS-MB6001P-3",
+    "excel_row": 86,
+    "excel_col": 10,
+    "image": "image_086.png",
+    "url": "https://www.nasta.co.jp/product/post/008.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB6101P-2",
+    "excel_row": 14,
+    "excel_col": 10,
+    "image": "image_018.png",
+    "url": "https://www.nasta.co.jp/product/post/007.html",
+    "haiban": true
+  },
+  {
+    "category": "ポスト前入後出",
+    "spec": "前入後出",
+    "model": "KS-MB6101P-3",
+    "excel_row": 14,
+    "excel_col": 13,
+    "image": "image_019.png",
+    "url": "https://www.nasta.co.jp/product/post/007.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLC",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/support/maintenance/delivery-box/"
+  },
+  {
+    "model": "KS-TLG",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/001.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLH",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/010.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLS",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/support/maintenance/delivery-box/"
+  },
+  {
+    "model": "KS-TLH18",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/008.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLH18-S",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/010.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLH-S",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/010.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLJ360",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/002.html",
+    "haiban": false
+  },
+  {
+    "model": "KS-TLK500(-F-S)",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/003.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLM500(-F-S)",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/005.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLM500K-F",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "url": "https://www.nasta.co.jp/product/delivery-box/007.html",
+    "haiban": true
+  },
+  {
+    "model": "KS-TLP360-S200／400",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/delivery-box/006.html"
+  },
+  {
+    "model": "KS-TLP360B-S200／400",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/delivery-box/006.html"
+  },
+  {
+    "model": "KS-TLP360LB-S200／400／600",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/delivery-box/006.html"
+  },
+  {
+    "model": "KS-TLP280LB-S200／400／600",
+    "category": "集合宅配ボックス",
+    "spec": "",
+    "haiban": true,
+    "url": "https://www.nasta.co.jp/product/delivery-box/021.html"
+  }
+];
+
+        let allProducts = [];
+        let filteredProducts = [];
+        let currentFilter = 'all';
+
+        // 画像ファイル名を複数パターン生成する関数
+        function getImagePaths(model) {
+            const paths = [];
+            
+            // 1. 元のファイル名
+            paths.push(`images/${model}.png`);
+            
+            // 2. 全角スラッシュを半角に変換
+            const hankakuSlash = model.replace(/／/g, '/');
+            if (hankakuSlash !== model) {
+                paths.push(`images/${hankakuSlash}.png`);
+            }
+            
+            // 3. 全角括弧に変換
+            const zenkaku = model.replace(/\(/g, '（').replace(/\)/g, '）');
+            if (zenkaku !== model) {
+                paths.push(`images/${zenkaku}.png`);
+            }
+            
+            // 4. 全角括弧+半角スラッシュ
+            const zenkakuHankakuSlash = zenkaku.replace(/／/g, '/');
+            if (zenkakuHankakuSlash !== model && zenkakuHankakuSlash !== zenkaku && zenkakuHankakuSlash !== hankakuSlash) {
+                paths.push(`images/${zenkakuHankakuSlash}.png`);
+            }
+            
+            return paths;
+        }
+
+        // 画像を順番に試す関数
+        function tryLoadImage(img, paths, index = 0) {
+            if (index >= paths.length) {
+                // 全て失敗した場合はプレースホルダー
+                img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0f0f0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23999'%3E画像なし%3C/text%3E%3C/svg%3E";
+                return;
+            }
+            
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                img.src = paths[index];
+            };
+            tempImg.onerror = function() {
+                tryLoadImage(img, paths, index + 1);
+            };
+            tempImg.src = paths[index];
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            allProducts = PRODUCTS_DATA;
+            filteredProducts = allProducts;
+            generateFilters();
+            displayProducts(filteredProducts);
+            updateStats();
+        });
+
+        function generateFilters() {
+            const categories = ['all', ...new Set(allProducts.map(p => p.category).filter(c => c))];
+            const filtersContainer = document.getElementById('filters');
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn' + (cat === 'all' ? ' active' : '');
+                btn.textContent = cat === 'all' ? '全て表示' : cat;
+                btn.onclick = () => filterByCategory(cat);
+                filtersContainer.appendChild(btn);
+            });
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if ((category === 'all' && btn.textContent === '全て表示') ||
+                    btn.textContent === category) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (category === 'all') {
+                filteredProducts = allProducts;
+            } else {
+                filteredProducts = allProducts.filter(p => p.category === category);
+            }
+            
+            displayProducts(filteredProducts);
+            updateStats(filteredProducts.length);
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productsContainer');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="loading">該当する製品が見つかりませんでした</div>';
+                return;
+            }
+            
+            const grid = document.createElement('div');
+            grid.className = 'products-grid';
+            
+            products.forEach(product => {
+                const hasUrl = product.url && product.url.trim() !== '';
+                
+                let specClass = '';
+                if (product.spec === '前入前出') {
+                    specClass = 'zenzen';
+                } else if (product.spec === '前入後出') {
+                    specClass = 'zengo';
+                }
+                
+                let tagsHtml = '<div class="product-tags">';
+                if (product.spec) {
+                    tagsHtml += `<span class="product-spec ${specClass}">${product.spec}</span>`;
+                }
+                if (product.haiban) {
+                    tagsHtml += '<span class="haiban-tag">廃番品</span>';
+                }
+                tagsHtml += '</div>';
+                
+                const cardContent = `
+                    <img class="product-image" src="" alt="${product.model}">
+                    <div class="product-info">
+                        <div class="product-model">${product.model}</div>
+                        ${tagsHtml}
+                        ${product.category ? `<div class="product-category">${product.category}</div>` : ''}
+                    </div>
+                `;
+                
+                let card;
+                if (hasUrl) {
+                    card = document.createElement('a');
+                    card.className = 'product-card';
+                    card.href = product.url;
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                } else {
+                    card = document.createElement('div');
+                    card.className = 'product-card no-link';
+                }
+                
+                card.innerHTML = cardContent;
+                
+                // 画像を複数パターンで試す
+                const img = card.querySelector('.product-image');
+                const imagePaths = getImagePaths(product.model);
+                tryLoadImage(img, imagePaths);
+                
+                grid.appendChild(card);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        function updateStats(count = null) {
+            const displayCount = count !== null ? count : filteredProducts.length;
+            document.getElementById('stats').textContent = 
+                `表示中: ${displayCount}件 / 全${allProducts.length}件`;
+        }
+    </script>
+</body>
+</html>
